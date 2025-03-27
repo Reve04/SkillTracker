@@ -1,0 +1,154 @@
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --success-color: #27ae60;
+    --info-color: #2980b9;
+    --warning-color: #f1c40f;
+    --danger-color: #e74c3c;
+}
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+}
+
+.card {
+    border: none;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+.progress-bar {
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: visible;
+    border-radius: 15px;
+}
+
+.progress {
+    border-radius: 15px;
+    background-color: #ecf0f1;
+}
+
+.badge {
+    font-weight: 500;
+}
+
+#skillsChart {
+    height: 500px;
+    width: 100%;
+    min-height: 400px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+/* Add these styles */
+#skillsChart .legend {
+    padding: 10px;
+    background-color: rgba(255,255,255,0.8);
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#skillsChart .slice {
+    stroke: #fff;
+    stroke-width: 2px;
+}
+
+#skillsChart text {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background: var(--secondary-color);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: var(--primary-color);
+    transform: scale(1.02);
+}
+
+.fa-check-circle {
+    color: var(--success-color);
+}
+
+/* Add these styles */
+.badge.bg-danger {
+    background-color: #dc3545 !important;
+    color: white;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: black;
+}
+
+.progress-bar.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+/* Add profile image styling */
+.profile-photo {
+    border: 3px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Add to existing styles */
+.rounded-circle {
+    object-fit: cover;
+}
+.progress-bar.bg-warning {
+    background-color: #ffc107 !important;
+}
+
+.bg-success {
+    background-color: var(--success-color) !important;
+}
+
+/* Add these new styles */
+.list-group-item {
+    border-radius: 10px !important;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+.list-group-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.fa-file-pdf {
+    color: #e74c3c;
+}
+
+.fa-file-image {
+    color: #3498db;
+}
+
+.btn-outline-primary {
+    border-color: #3498db;
+    color: #3498db;
+}
+
+.btn-outline-primary:hover {
+    background-color: #3498db;
+    color: white;
+}
+
+.bg-info {
+    background-color: var(--info-color) !important;
+}

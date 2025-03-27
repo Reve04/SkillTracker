@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="jobs-container">
+    <div class="card">
+        <div class="card-header">
+            <h2>Current Job Openings</h2>
+        </div>
+        <div class="card-body">
+            <div class="jobs-grid">
+                {% for job in jobs %}
+                <div class="job-card">
+                    <h3>{{ job.title }}</h3>
+                    <div class="job-meta">
+                        <span class="company">{{ job.company }}</span>
+                        <span class="location">{{ job.location }}</span>
+                    </div>
+                    <div class="skills-list">
+                        {% for skill in job.skills %}
+                        <span class="skill-tag">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                    <button class="btn apply-btn">Apply Now</button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

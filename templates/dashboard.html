@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="row g-4">
+        <!-- Left Column - Skill Visualization -->
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Skill Distribution</h4>
+                        <form action="/delete_skills" method="POST">
+                            <button type="submit" class="btn btn-light btn-sm">
+                                <i class="fas fa-rotate-left me-1"></i> Reset Skills
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if graph_json %}
+                        <div id="skillsChart" style="height: 500px; width: 100%;"></div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-project-diagram fa-4x text-muted mb-3"></i>
+                            <p class="text-muted">Analyze certificates to visualize your skill distribution</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Interaction Panel -->
+        <div class="col-lg-4">
+            <!-- Certificate Analysis Card -->
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-file-import me-2"></i>Analyze Certificate</h4>
+                </div>
+                <div class="card-body">
+                    <form action="/upload" method="post" enctype="multipart/form-data">
+                        <div class="mb-3 file-upload-wrapper">
+                            <div class="drop-zone" onclick="document.querySelector('.file-input').click()">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Drag & drop or click to upload</p>
+                                <input type="file" class="file-input" name="certificate" 
+                                       accept=".pdf,.png,.jpg,.jpeg" required hidden>
+                            </div>
+                            <small class="form-text text-muted">Supported formats: PDF, PNG, JPG (max 5MB)</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 btn-analysis">
+                            <i class="fas fa-magic me-1"></i> Analyze & Extract Skills
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Skill Inventory Card -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-toolbox me-2"></i>Skill Inventory</h4>
+                        <span class="badge bg-light text-primary">{{ current_user.skills|length }} Skills</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if current_user.skills %}
+                        <div class="skill-cloud">
+                            {% for skill in current_user.skills %}
+                            <span class="skill-badge" data-bs-toggle="tooltip" title="{{ skill }}">
+                                {{ skill|truncate(15, True) }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-binoculars fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">No skills detected yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Plotly chart
+        const graphJSON = {{ graph_json|safe }};
+        if(graphJSON) {
+            // Merge default layout with custom settings
+            const layout = {
+                ...graphJSON.layout,
+                margin: {t: 30, b: 20, l: 20, r: 20},
+                hoverlabel: {font: {size: 14}},
+                showlegend: true,
+                legend: {
+                    orientation: "h",
+                    yanchor: "bottom",
+                    y: -0.3
+                }
+            };
+            
+            Plotly.newPlot('skillsChart', graphJSON.data, layout);
+        }
+
+        // Initialize Bootstrap tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(t => new bootstrap.Tooltip(t));
+
+        // Drag & drop functionality
+        const dropZone = document.querySelector('.drop-zone');
+        const fileInput = document.querySelector('.file-input');
+        
+        dropZone.addEventListener('dragover', e => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            fileInput.files = e.dataTransfer.files;
+        });
+    });
+</script>
+{% endblock %}

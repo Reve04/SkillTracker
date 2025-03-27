@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section text-center">
+    <h1 class="display-4 mb-4">Skill Certificate Analyzer</h1>
+    <p class="lead">Upload your certificates and discover career opportunities</p>
+    
+    {% if not current_user.is_authenticated %}
+    <div class="mt-5">
+        <a href="/signup" class="btn btn-primary btn-lg">Get Started</a>
+        <a href="/login" class="btn btn-secondary btn-lg">Login</a>
+    </div>
+    {% else %}
+    <div class="mt-5">
+        <a href="/dashboard" class="btn btn-success btn-lg">Go to Dashboard</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

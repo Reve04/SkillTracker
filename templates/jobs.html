@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="jobs">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="fas fa-briefcase me-2"></i>Job Openings</h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                {% for job in jobs %}
+                <div class="col-12">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="card-title">{{ job.title }}</h5>
+                                    <div class="d-flex align-items-center gap-2 text-muted">
+                                        <span class="badge bg-info">{{ job.type }}</span>
+                                        <small><i class="fas fa-map-marker-alt me-1"></i>{{ job.location }}</small>
+                                        <small><i class="fas fa-building me-1"></i>{{ job.company }}</small>
+                                    </div>
+                                </div>
+                                <span class="badge bg-success fs-6">{{ job.salary }}</span>
+                            </div>
+
+                            <div class="progress mb-4" style="height: 30px;">
+                                <div class="progress-bar progress-bar-striped bg-{% if job.match > 75 %}success{% else %}info{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ job.match }}%">
+                                    {{ job.match }}% Match
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6 class="text-muted">Required Skills:</h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% for skill in job.skills %}
+                                    <span class="badge bg-{% if skill in job.matched_skills %}success{% else %}secondary{% endif %} rounded-pill p-2">
+                                        <i class="fas fa-{% if skill in job.matched_skills %}check-circle{% else %}circle-notch{% endif %} me-1"></i>
+                                        {{ skill }}
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Posted 2 days ago</small>
+                                <button class="btn btn-outline-primary">
+                                    <i class="fas fa-external-link-alt me-1"></i>Apply Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-briefcase fa-4x text-muted mb-3"></i>
+                        <p class="text-muted">No matching job openings found. Try uploading more certificates.</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

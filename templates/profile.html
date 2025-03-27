@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Skill Portfolio</h4>
+                </div>
+                <div class="card-body">
+                    {% if current_user.skills %}
+                    <div class="skills-container">
+                        {% for skill in current_user.skills %}
+                        <div class="skill-item">
+                            <span class="skill-name">{{ skill }}</span>
+                            <div class="skill-progress">
+                                <div class="progress-bar" style="width: 80%"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No skills detected yet. Upload certificates to build your portfolio.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Account Information</h4>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">Username</dt>
+                        <dd class="col-sm-7">{{ current_user.username }}</dd>
+                        
+                        <dt class="col-sm-5">Member Since</dt>
+                        <dd class="col-sm-7">{{ current_user.created_at.strftime('%b %d, %Y') }}</dd>
+                        
+                        <dt class="col-sm-5">Total Skills</dt>
+                        <dd class="col-sm-7">{{ current_user.skills|length }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
