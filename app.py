@@ -12,6 +12,7 @@ import plotly.express as px
 import pandas as pd
 import uuid
 import pytesseract
+from werkzeug.utils import secure_filename  # Add this
 from functools import lru_cache
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash
@@ -26,6 +27,7 @@ from spacy.matcher import PhraseMatcher
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
+from flask import send_from_directory
 
 load_dotenv()
 
@@ -34,6 +36,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
+app.config['ALLOWED_EXTENSIONS'] = {'pdf', 'png', 'jpg', 'jpeg'}
 
 # Flask-Login configuration
 login_manager = LoginManager(app)
@@ -54,6 +58,14 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(120), nullable=False)
     skills = db.Column(db.JSON, default=list)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    certificates = db.relationship('Certificate', backref='user', lazy=True)  # New relationship
+
+class Certificate(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    filename = db.Column(db.String(255), nullable=False)
+    skills = db.Column(db.JSON, nullable=False)  # Skills detected in this certificate
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -78,6 +90,10 @@ def load_skill_patterns():
     ]
     nlp_model = get_nlp_model()
     return [nlp_model.make_doc(skill.lower()) for skill in skill_keywords]
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 def detect_skills(text):
     try:
@@ -248,6 +264,17 @@ def signup():
         return redirect(url_for('dashboard'))
     return render_template('signup.html')
 
+@app.route('/download/<certificate_id>')
+@login_required
+def download_certificate(certificate_id):
+    cert = Certificate.query.filter_by(id=certificate_id, user_id=current_user.id).first_or_404()
+    return send_from_directory(
+        app.config['UPLOAD_FOLDER'],
+        cert.filename,
+        as_attachment=True,
+        download_name=f"certificate_{cert.id}_{cert.filename}"
+    )
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -301,31 +328,48 @@ def upload_certificate():
         return redirect(url_for('dashboard'))
     
     try:
-        # Extract text using the optimized function
+        if not allowed_file(file.filename):
+            raise ValueError("Invalid file type. Only PDF/PNG/JPG allowed.")
+        
+        # Process text and detect skills
         text = extract_text_from_file(file)
         if not text:
             raise ValueError("Could not extract text from file")
-        # Detect skills using the optimized NLP function
         new_skills = detect_skills(text)
+        
         if not new_skills:
             raise ValueError("No skills detected in the document")
-        # Update user skills (ensuring uniqueness)
+        
+        # Generate secure filename
+        original_filename = secure_filename(file.filename)
+        unique_filename = f"{uuid.uuid4().hex}_{original_filename}"
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+        
+        # Save the physical file
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        unique_filename = f"{uuid.uuid4()}_{secure_filename(file.filename)}"
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+        file.save(file_path)
+        
+        # Update user skills and create certificate record
         existing_skills = current_user.skills if current_user.skills else []
         updated_skills = list(set(existing_skills + new_skills))
         current_user.skills = updated_skills
+        
+        new_cert = Certificate(
+            user_id=current_user.id,
+            filename=unique_filename,
+            skills=new_skills
+        )
+        db.session.add(new_cert)
         db.session.commit()
-        flash(f'Added {len(new_skills)} new skills!', 'success')
+        
+        flash(f'Added {len(new_skills)} new skills! Certificate stored.', 'success')
     except Exception as e:
+        db.session.rollback()
         traceback.print_exc()
         flash(str(e), 'danger')
-    return redirect(url_for('dashboard'))
-
-@app.route('/delete_skills', methods=['POST'])
-@login_required
-def delete_skills():
-    current_user.skills = []
-    db.session.commit()
-    flash('All skills have been reset!', 'success')
+    
     return redirect(url_for('dashboard'))
 
 @app.route('/jobs')
@@ -340,6 +384,14 @@ def job_recommendations():
     return render_template('jobs.html', 
                          jobs=jobs,
                          current_user_skills=current_user_skills)
+
+@app.route('/delete_skills', methods=['POST'])  # MUST be POST
+@login_required
+def delete_skills():
+    current_user.skills = []
+    db.session.commit()
+    flash('All skills have been reset!', 'success')
+    return redirect(url_for('dashboard'))
 
 @app.route('/profile')
 @login_required
