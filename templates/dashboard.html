@@ -9,9 +9,10 @@
                 <div class="card-header bg-primary text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Skill Distribution</h4>
-                        <form action="/delete_skills" method="POST">
-                            <button type="submit" class="btn btn-light btn-sm">
-                                <i class="fas fa-rotate-left me-1"></i> Reset Skills
+                        <!-- Add this form where your reset button should be -->
+                        <form action="{{ url_for('delete_skills') }}" method="POST">
+                            <button type="submit" class="btn btn-danger">
+                                Reset All Skills
                             </button>
                         </form>
                     </div>
